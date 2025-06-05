@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 import secrets
+import dotenv
+
+dotenv.load_dotenv()
 
 
 class Config(BaseSettings):
@@ -10,6 +13,10 @@ class Config(BaseSettings):
     secret_key: str = Field(
         description="Secret key", default_factory=lambda: secrets.token_hex(32)
     )
+    cros_origin: str = Field("*", description="Cross origin")
+
+    host: str = "0.0.0.0"
+    port: int = Field(8000, description="Port", le=65535, ge=1)  # 1- 65535
 
 
 config = Config()  # type: ignore

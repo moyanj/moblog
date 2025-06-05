@@ -16,4 +16,5 @@ dependencies = [
     "tortoise-orm[aiomysql]>=0.25.0",
     "uvicorn>=0.34.2",
     "uvloop>=0.21.0",
+    "xxhash>=3.5.0",
 ]
