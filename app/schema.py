@@ -87,18 +87,23 @@ class Config(Model):
 
     @classmethod
     async def init(cls):
-        for key, value in {
-            "site_title": "My Blog",
-            "site_description": "A blog built with Tortoise ORM",
-            "site_keywords": "tortoise,orm,blog",
-            "site_logo": "",
-        }:
-            await cls.get_or_create(key=key, defaults={"value": value})
+        if await cls.get_val("init", "n") == "n":
+            print("初始化数据库...")
+            for key, value in {
+                "site_title": "My Blog",
+                "site_description": "A blog built with Tortoise ORM",
+                "site_keywords": "tortoise,orm,blog",
+                "site_logo": "",
+                "init": "y",
+            }.items():
+                await cls.set_val(key, value)
 
     @classmethod
     async def get_val(cls, key: str, default: Optional[str] = None):
-        c = await cls.get_or_create(key=key, defaults={"value": default})
-        return c[0].value
+        c = await cls.get_or_none(key=key)
+        if c is None:
+            return default
+        return c.value
 
     @classmethod
     async def set_val(cls, key: str, value: str):

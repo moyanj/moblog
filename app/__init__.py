@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from loguru import logger
 from . import db
-from .config import config
+from .config import server_config
+from .routers import setting_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up...")
-    logger.info(f"Running at {config.host}:{config.port}")
+    logger.info(f"Running at {server_config.host}:{server_config.port}")
     await db.init_db()
     logger.info("Started successfully")
     yield
@@ -20,11 +21,13 @@ app = FastAPI(lifespan=lifespan, title="MoBlog")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.cros_origin.split(","),
+    allow_origins=server_config.cros_origin.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(setting_router)
 
 
 @app.get("/")

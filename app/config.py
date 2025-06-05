@@ -19,4 +19,4 @@ class Config(BaseSettings):
     port: int = Field(8000, description="Port", le=65535, ge=1)  # 1- 65535
 
 
-config = Config()  # type: ignore
+server_config = Config()  # type: ignore
