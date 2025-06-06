@@ -6,7 +6,7 @@ from tortoise.models import Model
 
 
 class User(Model):
-    id = fields.IntField(pk=True, index=True)
+    id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255)  # 用户名
     password = fields.CharField(max_length=255)  # 密码（sha256）
     email = fields.CharField(max_length=255, unique=True, index=True)  # 邮箱
@@ -24,7 +24,7 @@ class User(Model):
 
 
 class Tag(Model):
-    id = fields.IntField(pk=True, index=True)
+    id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255, unique=True)  # 标签名
 
     def __str__(self):
@@ -35,7 +35,7 @@ class Tag(Model):
 
 
 class Category(Model):
-    id = fields.IntField(pk=True, index=True)
+    id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255, unique=True)  # 类别名
 
     def __str__(self):
@@ -46,7 +46,7 @@ class Category(Model):
 
 
 class Post(Model):
-    id = fields.IntField(pk=True, index=True)
+    id = fields.IntField(pk=True)
     title = fields.CharField(max_length=255)  # 标题
     summary = fields.TextField()  # 摘要
     content = fields.TextField()  # 内容（Markdown）

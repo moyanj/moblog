@@ -56,7 +56,7 @@ async def me(user: User = Depends(auth.get_current_user)):
         "name": user.name,
         "email": user.email,
         "avatar": user.avatar,
-        "updated_at": user.updated_at.isoformat(),
-        "created_at": user.created_at.isoformat(),
+        "updated_at": user.updated_at.isoformat(timespec="seconds"),
+        "created_at": user.created_at.isoformat(timespec="seconds"),
     }
     return Response(out)
