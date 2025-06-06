@@ -21,8 +21,8 @@ def convert_user_id(id: int | str, user):
 
 
 @router.post("/login")
-async def login(email: str, password: str):
-    u = await User.get_or_none(email=email)
+async def login(name: str, password: str):
+    u = await User.get_or_none(name=name)
     if u is None:
         return Response(None, "User not found", 404)
 
@@ -34,8 +34,8 @@ async def login(email: str, password: str):
 
 
 @router.post("/user")
-async def register(name: str, email: str, password: str):
-    if (await User.get_or_none(email=email)) is not None:
+async def register(name: str, password: str):
+    if (await User.get_or_none(name=name)) is not None:
         return Response(None, "Email already exists", 400)
 
     if auth.check_pwd_policy(password) is False:
@@ -47,9 +47,7 @@ async def register(name: str, email: str, password: str):
     # 使用 bcrypt 对密码进行哈希
     hashed_password = bcrypt.hashpw(password.encode(), salt)
 
-    u = User(
-        name=name, email=email, password=hashed_password.decode(), salt=salt.decode()
-    )
+    u = User(name=name, password=hashed_password.decode(), salt=salt.decode())
     await u.save()
 
     return Response(auth.make_token(u))
