@@ -9,7 +9,13 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import db
 from .config import server_config
-from .routers import auth_router, posts_router, setting_router
+from .routers import (
+    auth_router,
+    posts_router,
+    setting_router,
+    tags_router,
+    categories_router,
+)
 from .utils import Response
 
 
@@ -23,6 +29,8 @@ async def lifespan(app: FastAPI):
     app.include_router(setting_router)
     app.include_router(auth_router)
     app.include_router(posts_router)
+    app.include_router(tags_router)
+    app.include_router(categories_router)
 
     yield
     await db.Tortoise.close_connections()

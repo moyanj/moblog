@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.models import PostCreateModel, PostUpdateModel
+from app.models import PostCreateModel, PostUpdateModel, PostInfo, GetPostResult
 from app.schema import Category, Post, Tag, User
 from app.utils import Response
 from app.utils.auth import get_current_user
@@ -11,28 +11,31 @@ from app.utils.auth import get_current_user
 router = APIRouter(prefix="/posts")
 
 
-@router.get("")
-async def get_posts(page: int = 1, per_page: int = 10) -> Response:
+@router.get("/")
+async def get_posts(page: int = 1, per_page: int = 10) -> Response[GetPostResult]:
     """
     获取文章列表（支持分页）
     """
     offset = (page - 1) * per_page
     posts = await Post.all().offset(offset).limit(per_page)
+    post_count = await Post.all().count()
     out = []
     for post in posts:
         await post.fetch_related("tags", "category", "author")
         out.append(post.to_safe_dict())
-    return Response(data=out)
+    return Response.success(
+        GetPostResult(posts=out, total=post_count, page=page, per_page=per_page)
+    )
 
 
 @router.get("/{post_id}")
-async def get_post_by_id(post_id: int) -> Response:
+async def get_post_by_id(post_id: int) -> Response[PostInfo]:
     """
     根据文章 ID 获取文章详情
     """
     post = await Post.get_or_none(id=post_id)
     if not post:
-        raise HTTPException(status_code=404, detail="文章不存在")
+        raise HTTPException(status_code=404, detail="Post not found")
     await post.fetch_related("tags", "category", "author")
     return Response(data=post.to_safe_dict())
 
@@ -40,7 +43,7 @@ async def get_post_by_id(post_id: int) -> Response:
 @router.post("")
 async def create_post(
     data: PostCreateModel, user: User = Depends(get_current_user)
-) -> Response:
+) -> Response[dict[str, int]]:
     """
     创建新文章
     """

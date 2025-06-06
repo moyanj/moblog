@@ -20,3 +20,20 @@ class PostInfo(BaseModel):
     author: str = Field(..., description="Author")
     created_at: str = Field(..., description="Created at")
     updated_at: str = Field(..., description="Updated at")
+
+
+class GetPostResult(BaseModel):
+    total: int = Field(..., description="Count")
+    posts: list[PostInfo] = Field(..., description="Posts")
+    page: int = Field(..., description="Page")
+    per_page: int = Field(..., description="Per page")
+
+
+class TagInfo(BaseModel):
+    id: int
+    name: str
+
+
+class CategoryInfo(BaseModel):
+    id: int
+    name: str

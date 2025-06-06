@@ -4,6 +4,7 @@ from tortoise import fields
 from tortoise.indexes import Index
 from tortoise.models import Model
 import app.models as models
+from app.models.response import TagInfo, CategoryInfo
 
 
 class User(Model):
@@ -41,6 +42,12 @@ class Tag(Model):
     def __str__(self):
         return self.name
 
+    def to_safe_dict(self):
+        return TagInfo(
+            id=self.id,
+            name=self.name,
+        )
+
     class Meta:  # type: ignore
         table = "tags"
 
@@ -51,6 +58,12 @@ class Category(Model):
 
     def __str__(self):
         return self.name
+
+    def to_safe_dict(self):
+        return CategoryInfo(
+            id=self.id,
+            name=self.name,
+        )
 
     class Meta:  # type: ignore
         table = "categories"
