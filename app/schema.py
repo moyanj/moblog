@@ -1,3 +1,4 @@
+from operator import index
 from typing import Optional
 
 from tortoise import fields
@@ -38,7 +39,7 @@ class User(Model):
 
 class Tag(Model):
     id = fields.IntField(pk=True)
-    name = fields.CharField(max_length=255, unique=True)  # 标签名
+    name = fields.CharField(max_length=255, unique=True, index=True)  # 标签名
 
     def __str__(self):
         return self.name
@@ -55,7 +56,7 @@ class Tag(Model):
 
 class Category(Model):
     id = fields.IntField(pk=True)
-    name = fields.CharField(max_length=255, unique=True)  # 类别名
+    name = fields.CharField(max_length=255, unique=True, index=True)  # 类别名
 
     def __str__(self):
         return self.name
