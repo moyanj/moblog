@@ -1,14 +1,16 @@
 from typing import Optional
+
 from tortoise import fields
-from tortoise.models import Model
 from tortoise.indexes import Index
+from tortoise.models import Model
 
 
 class User(Model):
     id = fields.IntField(pk=True, index=True)
-    name = fields.CharField(max_length=255, unique=True, index=True)  # 唯一用户名
+    name = fields.CharField(max_length=255)  # 用户名
     password = fields.CharField(max_length=255)  # 密码（sha256）
     email = fields.CharField(max_length=255, unique=True, index=True)  # 邮箱
+    salt = fields.CharField(max_length=32)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
     avatar = fields.CharField(max_length=255, null=True)

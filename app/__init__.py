@@ -1,10 +1,12 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from loguru import logger
+
 from . import db
 from .config import server_config
-from .routers import setting_router
+from .routers import auth_router, setting_router
 
 
 @asynccontextmanager
@@ -28,6 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(setting_router)
+app.include_router(auth_router)
 
 
 @app.get("/")
