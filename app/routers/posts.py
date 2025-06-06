@@ -50,7 +50,9 @@ async def create_post(
     for tag_name in data.tag_names:
         tag = await Tag.get_or_none(name=tag_name)
         if tag is None:
-            return Response({"tag": tag}, "Tag not found", 404)
+            return Response(
+                data={"tag": tag}, message="Tag not found", status_code=404
+            ).ret()
         tags.append(tag)
 
     post = await Post.create(

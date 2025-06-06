@@ -1,3 +1,4 @@
+from typing import Mapping
 from fastapi import APIRouter
 
 from app.schema import Config
@@ -7,9 +8,9 @@ router = APIRouter(prefix="/setting")
 
 
 @router.get("/get_all")
-async def get_all() -> Response:
+async def get_all() -> Response[Mapping[str, str]]:
     raw = await Config.all()
-    return Response(data={item.key: item.value for item in raw})
+    return Response.success({item.key: item.value for item in raw})
 
 
 @router.post("/set")
@@ -36,4 +37,4 @@ async def get_init():
     """
     获取初始化状态
     """
-    return await Config.get_val("init", "n") == "y"
+    return Response.success(await Config.get_val("init", "n") == "y")

@@ -23,32 +23,32 @@ def convert_user_id(id: UserID, user):
 
 
 @router.post("/login")
-async def login(username: str, password: str):
+async def login(username: str, password: str) -> Response[str]:
     u = await User.get_or_none(username=username)
     if u is None:
-        return Response(None, "User not found", 404)
+        return Response.error("User not found", 404)
 
     # 使用 bcrypt 验证密码
     if not bcrypt.checkpw(password.encode(), u.password.encode()):
-        return Response(None, "Password is incorrect", 401)
+        return Response.error("Password is incorrect", 401)
 
-    return Response(auth.make_token(u))
+    return Response.success(auth.make_token(u))
 
 
 @router.get("/user")
 async def get_users(user: User = Depends(auth.get_current_user)):
-    return Response([user.to_safe_dict() for user in await User.all()])
+    return Response.success([user.to_safe_dict() for user in await User.all()])
 
 
 @router.post("/user")
 async def register(data: UserRegisterModel):
     if data.username == "me":
-        return Response(None, "Username is not allowed", 400)
+        return Response.error("Username is not allowed", 400)
     if (await User.get_or_none(username=data.username)) is not None:
-        return Response(None, "Username already exists", 400)
+        return Response.error("Username already exists", 400)
 
     if auth.check_pwd_policy(data.password) is False:
-        return Response(None, "Password is too weak", 400)
+        return Response.error("Password is too weak", 400)
 
     # 生成 16 字节的盐
     salt = bcrypt.gensalt(rounds=12)  # 使用 bcrypt 生成盐
@@ -67,7 +67,7 @@ async def register(data: UserRegisterModel):
 
     await u.save()
 
-    return Response(auth.make_token(u))
+    return Response.success(auth.make_token(u))
 
 
 @router.get("/user/{username}")
@@ -77,8 +77,8 @@ async def get_user(
     username = convert_user_id(username, user)
     u = await User.get_or_none(username=username)
     if u is None:
-        return Response(None, "User not found", 404)
-    return Response(u.to_safe_dict())
+        return Response.error("User not found", 404)
+    return Response.success(u.to_safe_dict())
 
 
 @router.delete("/user/{username}")

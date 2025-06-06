@@ -30,7 +30,7 @@ class User(Model):
 
     class Meta:  # type: ignore
         table = "users"
-        indexes = [Index(fields=["name", "id"])]
+        indexes = [Index(fields=["username", "id"])]
 
 
 class Tag(Model):
@@ -78,10 +78,9 @@ class Post(Model):
             "content": self.content,
             "tags": [tag.name for tag in self.tags],
             "category": self.category.name,
-            "author": self.author.id,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "author_name": self.author.name,
+            "author": self.author.username,
         }
 
     class Meta:  # type: ignore
