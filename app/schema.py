@@ -7,7 +7,9 @@ from tortoise.models import Model
 
 class User(Model):
     id = fields.IntField(pk=True)
-    name = fields.CharField(max_length=255, unique=True, index=True)  # 用户名
+    username = fields.CharField(
+        max_length=255, unique=True, index=True, validators=[lambda x: x != "me"]
+    )  # 用户名
     password = fields.CharField(max_length=60)  # 密码（sha256）
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
@@ -15,12 +17,11 @@ class User(Model):
     is_admin = fields.BooleanField(default=False)
 
     def __str__(self):
-        return f"User({self.name},{self.id})"
+        return f"User({self.username},{self.id})"
 
     def to_safe_dict(self):
         return {
-            "id": self.id,
-            "name": self.name,
+            "username": self.username,
             "avatar": self.avatar,
             "is_admin": self.is_admin,
             "created_at": self.created_at.isoformat(timespec="seconds"),

@@ -4,15 +4,14 @@ from typing import Optional
 
 
 class UserUpdateModel(BaseModel):
-    email: Optional[str] = Field(None, description="Email")
-    name: Optional[str] = Field(None, description="Name")
+    username: Optional[str] = Field(None, description="UserName")
     avatar: Optional[str] = Field(None, description="Avatar")
     is_admin: Optional[bool] = Field(None, description="Is admin")
     password: Optional[str] = Field(None, description="Password")
 
 
 class UserRegisterModel(BaseModel):
-    name: str = Field(..., description="Name")
+    username: str = Field(..., description="UserName")
     password: str = Field(..., description="Password")
 
 

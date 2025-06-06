@@ -17,7 +17,7 @@ def make_token(user: User, exp=24):
     exp = now + timedelta(hours=exp)
     playload = {
         "exp": int(exp.timestamp()),
-        "data": user.id,
+        "data": user.username,
     }
     return jwt.encode(playload, server_config.secret_key, algorithm="HS256")
 
@@ -78,14 +78,14 @@ async def get_current_user(token: Annotated[str, Depends(extract_token)]) -> Use
         )
     try:
         payload = verify_token(token)
-        user_id = int(payload["data"])  # type: ignore
+        username = int(payload["data"])  # type: ignore
     except (ValidationError, ValueError, KeyError) as e:
         raise HTTPException(
             status_code=401,
             detail="Invalid token format",
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
-    if not (user := await User.get_or_none(id=user_id)):
+    if not (user := await User.get_or_none(username=username)):
         raise HTTPException(
             status_code=401,
             detail="User not found",
