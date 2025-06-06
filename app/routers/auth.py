@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 import app.utils.auth as auth
 from app.schema import User
 from app.utils import Response
+from app.models import UserUpdateModel
 
 router = APIRouter(prefix="/auth")
 
@@ -51,12 +52,48 @@ async def login(email: str, password: str):
 
 @router.get("/me")
 async def me(user: User = Depends(auth.get_current_user)):
-    out = {
-        "id": user.id,
-        "name": user.name,
-        "email": user.email,
-        "avatar": user.avatar,
-        "updated_at": user.updated_at.isoformat(timespec="seconds"),
-        "created_at": user.created_at.isoformat(timespec="seconds"),
-    }
-    return Response(out)
+    return Response(user.to_safe_dict())
+
+
+@router.get("/remove/{id}")
+async def remove(id: int, user: User = Depends(auth.get_current_user)):
+    if user.is_admin:
+        await User.filter(id=id).delete()
+        return Response.success()
+    else:
+        return Response.error("No permission", 403)
+
+
+@router.post("/update/{id}")
+async def update(
+    id: int, data: UserUpdateModel, user: User = Depends(auth.get_current_user)
+):
+    # 检查是否需要管理员权限
+    need_admin = False
+    if data.is_admin is not None:
+        need_admin = True
+    if id != user.id:
+        need_admin = True
+    if need_admin:
+        if not user.is_admin:
+            return Response.error("No permission", 403)
+
+    # 获取目标用户
+    target = await User.get_or_none(id=id)
+    if target is None:
+        return Response.error("User not found", 404)
+
+    # 准备更新数据
+    data_dict = data.model_dump(exclude_unset=True)
+    # 处理密码更新
+    if data.password:
+        # 生成 16 字节的盐
+        salt = bcrypt.gensalt(rounds=12)  # 使用 bcrypt 生成盐
+        # 使用 bcrypt 对密码进行哈希
+        hashed_password = bcrypt.hashpw(data.password.encode(), salt).decode()
+        data_dict["password"] = hashed_password
+        data_dict["salt"] = salt.decode()
+
+    # 更新目标用户信息
+    await target.update_from_dict(data_dict).save()
+    return Response.success(target.to_safe_dict())

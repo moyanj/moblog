@@ -14,9 +14,21 @@ class User(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
     avatar = fields.CharField(max_length=255, null=True)
+    is_admin = fields.BooleanField(default=False)
 
     def __str__(self):
         return f"User({self.name},{self.id})"
+
+    def to_safe_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "avatar": self.avatar,
+            "is_admin": self.is_admin,
+            "created_at": self.created_at.isoformat(timespec="seconds"),
+            "updated_at": self.updated_at.isoformat(timespec="seconds"),
+        }
 
     class Meta:  # type: ignore
         table = "users"

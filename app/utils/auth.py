@@ -20,15 +20,12 @@ def make_token(user: User, exp=24):
 
 
 def verify_token(token: str):
-    print(server_config.secret_key)
     try:
         playload = jwt.decode(token, server_config.secret_key, algorithms=["HS256"])
         return playload
     except jwt.ExpiredSignatureError:
-        print("Token expired")
         return None
     except jwt.InvalidTokenError as e:
-        print(e)
         return None
 
 
@@ -43,13 +40,11 @@ def check_pwd_policy(password: str):
 
 
 async def get_current_user(token: str):
-    print(token)
     playload = verify_token(token)
     if not (playload is None):
         user = await User.get_or_none(id=int(playload["data"]))
         if user is not None:
             return user
         else:
-            print("User not found")
             raise HTTPException(status_code=401, detail="Invalid token")
     raise HTTPException(status_code=401, detail="Invalid token")
