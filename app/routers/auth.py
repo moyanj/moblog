@@ -1,12 +1,12 @@
 from typing import Optional
-import bcrypt
 
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 
 import app.utils.auth as auth
+from app.models import UserRegisterModel, UserUpdateModel
 from app.schema import User
 from app.utils import Response
-from app.models import UserRegisterModel, UserUpdateModel
 
 router = APIRouter()
 

@@ -1,14 +1,15 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
 from loguru import logger
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import db
 from .config import server_config
-from .routers import auth_router, setting_router, posts_router
+from .routers import auth_router, posts_router, setting_router
 from .utils import Response
 
 
@@ -27,7 +28,7 @@ async def lifespan(app: FastAPI):
     await db.Tortoise.close_connections()
 
 
-app = FastAPI(lifespan=lifespan, title="MoBlog")
+app = FastAPI(lifespan=lifespan, title="MoBlog", default_response_class=ORJSONResponse)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,12 +41,14 @@ app.add_middleware(
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return Response(message=exc.detail, status_code=exc.status_code)
+    return Response.error(message=exc.detail, status_code=exc.status_code)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return Response(data=exc.errors(), message="Request is Invalid", status_code=400)
+    return Response(
+        data=exc.errors(), message="Request is Invalid", status_code=400
+    ).ret()
 
 
 @app.get("/")

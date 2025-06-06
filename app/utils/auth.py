@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
-from typing import Optional, Annotated
 import re
+from datetime import datetime, timedelta
+from typing import Annotated, Optional
 
 import jwt
-from fastapi import HTTPException, Request, Depends
-from pydantic import ValidationError
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import ValidationError
 
 from app.config import server_config
 from app.schema import User

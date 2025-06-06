@@ -1,10 +1,12 @@
 from calendar import c
-from fastapi import APIRouter, Depends, HTTPException
-from app.utils import Response
-from app.schema import Post, User, Category, Tag
-from app.models import PostCreateModel, PostUpdateModel
-from app.utils.auth import get_current_user
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.models import PostCreateModel, PostUpdateModel
+from app.schema import Category, Post, Tag, User
+from app.utils import Response
+from app.utils.auth import get_current_user
 
 router = APIRouter(prefix="/posts")
 
