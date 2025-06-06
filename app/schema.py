@@ -30,7 +30,7 @@ class User(Model):
 
     class Meta:  # type: ignore
         table = "users"
-        indexes = [Index(fields=["name", "email"])]
+        indexes = [Index(fields=["name", "id"])]
 
 
 class Tag(Model):

@@ -10,8 +10,10 @@ from app.models import UserUpdateModel
 
 router = APIRouter()
 
+UserID = int | str
 
-def convert_user_id(id: int | str, user):
+
+def convert_user_id(id: UserID, user):
     if id == "me":
         if user is None:
             raise HTTPException(status_code=400, detail="Not logged in yet")
@@ -54,7 +56,7 @@ async def register(name: str, password: str):
 
 
 @router.get("/user/{id}")
-async def get_user(id: int, user: Optional[User] = Depends(auth.get_current_user)):
+async def get_user(id: UserID, user: Optional[User] = Depends(auth.get_current_user)):
     id = convert_user_id(id, user)
     u = await User.get_or_none(id=id)
     if u is None:
@@ -63,7 +65,7 @@ async def get_user(id: int, user: Optional[User] = Depends(auth.get_current_user
 
 
 @router.delete("/user/{id}")
-async def remove_user(id: int, user: User = Depends(auth.get_current_user)):
+async def remove_user(id: UserID, user: User = Depends(auth.get_current_user)):
     id = convert_user_id(id, user)
     if not user.is_admin:
         return Response.error("No permission", 403)
@@ -77,8 +79,8 @@ async def remove_user(id: int, user: User = Depends(auth.get_current_user)):
 
 
 @router.put("/user/{id}")
-async def update(
-    id: int, data: UserUpdateModel, user: User = Depends(auth.get_current_user)
+async def update_user(
+    id: UserID, data: UserUpdateModel, user: User = Depends(auth.get_current_user)
 ):
     id = convert_user_id(id, user)
     # 检查是否需要管理员权限
