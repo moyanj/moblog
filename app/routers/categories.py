@@ -1,7 +1,9 @@
-from fastapi import APIRouter
-from app.utils import Response
+from fastapi import APIRouter, Depends
+
 from app.models import CategoryInfo, GetPostResult
 from app.schema import Category
+from app.utils import Response
+from app.utils.auth import get_current_user
 
 router = APIRouter(prefix="/categories")
 
@@ -13,7 +15,9 @@ async def get_categories() -> Response[list[CategoryInfo]]:
 
 
 @router.post("/")
-async def create_category(name: str) -> Response[CategoryInfo]:
+async def create_category(
+    name: str, user=Depends(get_current_user)
+) -> Response[CategoryInfo]:
     """
     创建标签
     """
@@ -22,11 +26,11 @@ async def create_category(name: str) -> Response[CategoryInfo]:
 
 
 @router.delete("/{category_id}")
-async def delete_category(tag_id: int) -> Response:
+async def delete_category(category_id: int, user=Depends(get_current_user)) -> Response:
     """
     删除标签
     """
-    category = await Category.get_or_none(id=tag_id)
+    category = await Category.get_or_none(id=category_id)
     if not category:
         return Response.error(message="Category not found")
     await category.delete()
@@ -51,14 +55,14 @@ async def get_post_by_category(
     offset = (page - 1) * per_page
     posts = await category.posts.offset(offset).limit(per_page)  # type: ignore
     # 计算总文章数
-    total = await category.posts.count()  # type: ignore
+    total = len(category.posts)  # type: ignore
 
     # 返回 Result
     return Response.success(
         GetPostResult(
             page=page,
             per_page=per_page,
-            posts=[post.to_safe_dict() for post in posts],
+            posts=[await post.to_safe_dict() for post in posts],
             total=total,
         )
     )

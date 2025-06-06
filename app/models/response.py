@@ -1,10 +1,11 @@
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
 class UserInfo(BaseModel):
     username: str = Field(description="UserName")
-    avatar: str = Field(description="Avatar")
+    avatar: Optional[str] = Field(description="Avatar")
     is_admin: bool = Field(description="Is admin")
     created_at: str = Field(..., description="Created at")
     updated_at: str = Field(..., description="Updated at")

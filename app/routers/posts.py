@@ -1,9 +1,7 @@
-from calendar import c
-from typing import List, Optional
-
+from turtle import pos
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.models import PostCreateModel, PostUpdateModel, PostInfo, GetPostResult
+from app.models import GetPostResult, PostCreateModel, PostInfo, PostUpdateModel
 from app.schema import Category, Post, Tag, User
 from app.utils import Response
 from app.utils.auth import get_current_user
@@ -37,7 +35,7 @@ async def get_post_by_id(post_id: int) -> Response[PostInfo]:
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     await post.fetch_related("tags", "category", "author")
-    return Response(data=post.to_safe_dict())
+    return Response(data=await post.to_safe_dict())
 
 
 @router.post("")
@@ -51,23 +49,22 @@ async def create_post(
     category = await Category.get_or_none(id=data.category_id)
     if category is None:
         return Response.error("Category not found", 404)
-    tags = []
-    for tag_name in data.tag_names:
-        tag = await Tag.get_or_none(name=tag_name)
-        if tag is None:
-            return Response(
-                data={"tag": tag}, message="Tag not found", status_code=404
-            ).ret()
-        tags.append(tag)
 
     post = await Post.create(
         title=data.title,
         summary=data.summary,
         content=data.content,
         author=user,
-        tags=tags,
         category=category,
     )
+
+    for tag_name in data.tag_names:
+        tag = await Tag.get_or_none(name=tag_name)
+        if tag is None:
+            return Response(
+                data={"tag": tag}, message="Tag not found", status_code=404
+            ).ret()
+        await post.tags.add(tag)
     return Response(data={"id": post.id}, message="Post created")
 
 

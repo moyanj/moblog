@@ -17,6 +17,7 @@ def make_token(user: User, exp=24):
     exp = now + timedelta(hours=exp)
     playload = {
         "exp": int(exp.timestamp()),
+        "iat": int(now.timestamp()),
         "data": user.username,
     }
     return jwt.encode(playload, server_config.secret_key, algorithm="HS256")
@@ -78,7 +79,7 @@ async def get_current_user(token: Annotated[str, Depends(extract_token)]) -> Use
         )
     try:
         payload = verify_token(token)
-        username = int(payload["data"])  # type: ignore
+        username = payload["data"]  # type: ignore
     except (ValidationError, ValueError, KeyError) as e:
         raise HTTPException(
             status_code=401,

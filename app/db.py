@@ -9,7 +9,7 @@ ORM_CONFIG = {
     },
     "apps": {
         "models": {
-            "models": ["aerich.models", "app.schema"],
+            "models": ["app.schema"],
             "default_connection": "default",
         },
     },

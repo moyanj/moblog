@@ -4,7 +4,7 @@ import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 
 import app.utils.auth as auth
-from app.models import UserRegisterModel, UserUpdateModel, UserInfo
+from app.models import UserInfo, UserRegisterModel, UserUpdateModel
 from app.schema import User
 from app.utils import Response
 

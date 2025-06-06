@@ -3,8 +3,9 @@ from typing import Optional
 from tortoise import fields
 from tortoise.indexes import Index
 from tortoise.models import Model
+
 import app.models as models
-from app.models.response import TagInfo, CategoryInfo
+from app.models.response import CategoryInfo, TagInfo
 
 
 class User(Model):
@@ -84,15 +85,16 @@ class Post(Model):
     def __str__(self):
         return f"Post({self.title},{self.id})"
 
-    def to_safe_dict(self):
+    async def to_safe_dict(self):
+        await self.fetch_related("tags")
         return models.PostInfo(
             id=self.id,
             title=self.title,
             summary=self.summary,
             tags=[tag.name for tag in self.tags],
             content=self.content,
-            author=self.author.username,
-            category=self.category.name,
+            author=(await self.author.first()).username,
+            category=(await self.category.first()).name,
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
         )
