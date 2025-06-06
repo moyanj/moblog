@@ -4,7 +4,7 @@ import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 
 import app.utils.auth as auth
-from app.models import UserRegisterModel, UserUpdateModel
+from app.models import UserRegisterModel, UserUpdateModel, UserInfo
 from app.schema import User
 from app.utils import Response
 
@@ -36,12 +36,14 @@ async def login(username: str, password: str) -> Response[str]:
 
 
 @router.get("/user")
-async def get_users(user: User = Depends(auth.get_current_user)):
+async def get_users(
+    user: User = Depends(auth.get_current_user),
+) -> Response[list[UserInfo]]:
     return Response.success([user.to_safe_dict() for user in await User.all()])
 
 
 @router.post("/user")
-async def register(data: UserRegisterModel):
+async def register(data: UserRegisterModel) -> Response[str]:
     if data.username == "me":
         return Response.error("Username is not allowed", 400)
     if (await User.get_or_none(username=data.username)) is not None:
@@ -73,7 +75,7 @@ async def register(data: UserRegisterModel):
 @router.get("/user/{username}")
 async def get_user(
     username: str, user: Optional[User] = Depends(auth.get_current_user)
-):
+) -> Response[UserInfo]:
     username = convert_user_id(username, user)
     u = await User.get_or_none(username=username)
     if u is None:
@@ -82,7 +84,9 @@ async def get_user(
 
 
 @router.delete("/user/{username}")
-async def remove_user(username: str, user: User = Depends(auth.get_current_user)):
+async def remove_user(
+    username: str, user: User = Depends(auth.get_current_user)
+) -> Response[None]:
     username = convert_user_id(username, user)
     if not user.is_admin:
         return Response.error("No permission", 403)
@@ -98,7 +102,7 @@ async def remove_user(username: str, user: User = Depends(auth.get_current_user)
 @router.put("/user/{username}")
 async def update_user(
     username: str, data: UserUpdateModel, user: User = Depends(auth.get_current_user)
-):
+) -> Response[UserInfo]:
     username = convert_user_id(username, user)
     # 检查是否需要管理员权限
     need_admin = False

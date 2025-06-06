@@ -3,6 +3,7 @@ from typing import Optional
 from tortoise import fields
 from tortoise.indexes import Index
 from tortoise.models import Model
+import app.models as models
 
 
 class User(Model):
@@ -20,13 +21,13 @@ class User(Model):
         return f"User({self.username},{self.id})"
 
     def to_safe_dict(self):
-        return {
-            "username": self.username,
-            "avatar": self.avatar,
-            "is_admin": self.is_admin,
-            "created_at": self.created_at.isoformat(timespec="seconds"),
-            "updated_at": self.updated_at.isoformat(timespec="seconds"),
-        }
+        return models.UserInfo(
+            username=self.username,
+            avatar=self.avatar,
+            created_at=self.created_at.isoformat(),
+            is_admin=self.is_admin,
+            updated_at=self.updated_at.isoformat(),
+        )
 
     class Meta:  # type: ignore
         table = "users"
@@ -71,17 +72,17 @@ class Post(Model):
         return f"Post({self.title},{self.id})"
 
     def to_safe_dict(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "summary": self.summary,
-            "content": self.content,
-            "tags": [tag.name for tag in self.tags],
-            "category": self.category.name,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "author": self.author.username,
-        }
+        return models.PostInfo(
+            id=self.id,
+            title=self.title,
+            summary=self.summary,
+            tags=[tag.name for tag in self.tags],
+            content=self.content,
+            author=self.author.username,
+            category=self.category.name,
+            created_at=self.created_at.isoformat(),
+            updated_at=self.updated_at.isoformat(),
+        )
 
     class Meta:  # type: ignore
         table = "posts"
