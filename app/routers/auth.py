@@ -1,3 +1,4 @@
+from typing import Mapping
 import bcrypt
 
 from fastapi import APIRouter, Depends
@@ -57,11 +58,15 @@ async def me(user: User = Depends(auth.get_current_user)):
 
 @router.get("/remove/{id}")
 async def remove(id: int, user: User = Depends(auth.get_current_user)):
-    if user.is_admin:
-        await User.filter(id=id).delete()
-        return Response.success()
-    else:
+    if not user.is_admin:
         return Response.error("No permission", 403)
+
+    target = await User.get_or_none(id=id)
+    if target is None:
+        return Response.error("User not found", 404)
+
+    await target.delete()
+    return Response.success()
 
 
 @router.post("/update/{id}")
