@@ -70,6 +70,20 @@ class Post(Model):
     def __str__(self):
         return f"Post({self.title},{self.id})"
 
+    def to_safe_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "summary": self.summary,
+            "content": self.content,
+            "tags": [tag.name for tag in self.tags],
+            "category": self.category.name,
+            "author": self.author.id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "author_name": self.author.name,
+        }
+
     class Meta:  # type: ignore
         table = "posts"
 

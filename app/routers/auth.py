@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import app.utils.auth as auth
 from app.schema import User
 from app.utils import Response
-from app.models import UserUpdateModel
+from app.models import UserRegisterModel, UserUpdateModel
 
 router = APIRouter()
 
@@ -36,20 +36,20 @@ async def login(name: str, password: str):
 
 
 @router.post("/user")
-async def register(name: str, password: str):
-    if (await User.get_or_none(name=name)) is not None:
+async def register(data: UserRegisterModel):
+    if (await User.get_or_none(name=data.name)) is not None:
         return Response(None, "Email already exists", 400)
 
-    if auth.check_pwd_policy(password) is False:
+    if auth.check_pwd_policy(data.password) is False:
         return Response(None, "Password is too weak", 400)
 
     # 生成 16 字节的盐
     salt = bcrypt.gensalt(rounds=12)  # 使用 bcrypt 生成盐
 
     # 使用 bcrypt 对密码进行哈希
-    hashed_password = bcrypt.hashpw(password.encode(), salt)
+    hashed_password = bcrypt.hashpw(data.password.encode(), salt)
 
-    u = User(name=name, password=hashed_password.decode(), salt=salt.decode())
+    u = User(name=data.name, password=hashed_password.decode(), salt=salt.decode())
     await u.save()
 
     return Response(auth.make_token(u))
