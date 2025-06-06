@@ -8,8 +8,7 @@ from tortoise.models import Model
 class User(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255, unique=True, index=True)  # 用户名
-    password = fields.CharField(max_length=255)  # 密码（sha256）
-    salt = fields.CharField(max_length=32)
+    password = fields.CharField(max_length=60)  # 密码（sha256）
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
     avatar = fields.CharField(max_length=255, null=True)

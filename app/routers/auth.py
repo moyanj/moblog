@@ -35,6 +35,11 @@ async def login(name: str, password: str):
     return Response(auth.make_token(u))
 
 
+@router.get("/user")
+async def get_users(user: User = Depends(auth.get_current_user)):
+    return Response([user.to_safe_dict() for user in await User.all()])
+
+
 @router.post("/user")
 async def register(data: UserRegisterModel):
     if (await User.get_or_none(name=data.name)) is not None:
@@ -49,7 +54,15 @@ async def register(data: UserRegisterModel):
     # 使用 bcrypt 对密码进行哈希
     hashed_password = bcrypt.hashpw(data.password.encode(), salt)
 
-    u = User(name=data.name, password=hashed_password.decode(), salt=salt.decode())
+    u = User(name=data.name, password=hashed_password.decode())
+
+    if not User.exists():
+        u.update_from_dict(
+            {
+                "is_admin": True,
+            }
+        )
+
     await u.save()
 
     return Response(auth.make_token(u))
@@ -107,7 +120,6 @@ async def update_user(
         # 使用 bcrypt 对密码进行哈希
         hashed_password = bcrypt.hashpw(data.password.encode(), salt).decode()
         data_dict["password"] = hashed_password
-        data_dict["salt"] = salt.decode()
 
     # 更新目标用户信息
     await target.update_from_dict(data_dict).save()
