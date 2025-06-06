@@ -1,22 +1,39 @@
-from typing import Mapping
+from typing import Optional
 import bcrypt
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 import app.utils.auth as auth
 from app.schema import User
 from app.utils import Response
 from app.models import UserUpdateModel
 
-router = APIRouter(prefix="/auth")
+router = APIRouter()
 
 
-@router.get("/verify")
-async def verify_token(token: str):
-    return Response(auth.verify_token(token))
+def convert_user_id(id: int | str, user):
+    if id == "me":
+        if user is None:
+            raise HTTPException(status_code=400, detail="Not logged in yet")
+        return user.id
+    else:
+        return id
 
 
-@router.post("/register")
+@router.post("/login")
+async def login(email: str, password: str):
+    u = await User.get_or_none(email=email)
+    if u is None:
+        return Response(None, "User not found", 404)
+
+    # 使用 bcrypt 验证密码
+    if not bcrypt.checkpw(password.encode(), u.password.encode()):
+        return Response(None, "Password is incorrect", 401)
+
+    return Response(auth.make_token(u))
+
+
+@router.post("/user")
 async def register(name: str, email: str, password: str):
     if (await User.get_or_none(email=email)) is not None:
         return Response(None, "Email already exists", 400)
@@ -38,26 +55,18 @@ async def register(name: str, email: str, password: str):
     return Response(auth.make_token(u))
 
 
-@router.post("/token")
-async def login(email: str, password: str):
-    u = await User.get_or_none(email=email)
+@router.get("/user/{id}")
+async def get_user(id: int, user: Optional[User] = Depends(auth.get_current_user)):
+    id = convert_user_id(id, user)
+    u = await User.get_or_none(id=id)
     if u is None:
         return Response(None, "User not found", 404)
-
-    # 使用 bcrypt 验证密码
-    if not bcrypt.checkpw(password.encode(), u.password.encode()):
-        return Response(None, "Password is incorrect", 401)
-
-    return Response(auth.make_token(u))
+    return Response(u.to_safe_dict())
 
 
-@router.get("/me")
-async def me(user: User = Depends(auth.get_current_user)):
-    return Response(user.to_safe_dict())
-
-
-@router.get("/remove/{id}")
-async def remove(id: int, user: User = Depends(auth.get_current_user)):
+@router.delete("/user/{id}")
+async def remove_user(id: int, user: User = Depends(auth.get_current_user)):
+    id = convert_user_id(id, user)
     if not user.is_admin:
         return Response.error("No permission", 403)
 
@@ -69,10 +78,11 @@ async def remove(id: int, user: User = Depends(auth.get_current_user)):
     return Response.success()
 
 
-@router.post("/update/{id}")
+@router.put("/user/{id}")
 async def update(
     id: int, data: UserUpdateModel, user: User = Depends(auth.get_current_user)
 ):
+    id = convert_user_id(id, user)
     # 检查是否需要管理员权限
     need_admin = False
     if data.is_admin is not None:
